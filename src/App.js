@@ -6,6 +6,8 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import Create from './components/Create';
 import Read from './components/Read';
 import Update from './components/Update';
+import Budget from './components/Budget';
+import CompareBudget from './components/CompareBudget';
 
 
 
@@ -19,6 +21,8 @@ function App() {
         <Route path='/create' element={<Create/>}/>
         <Route path='/read/:id' element={<Read/>} />
         <Route path='/edit/:id' element={<Update/>}/>
+        <Route path='/budget' element={<Budget/>}/>
+        <Route path='/compare' element={<CompareBudget/>}/>
     </Routes>
     </BrowserRouter>
   );

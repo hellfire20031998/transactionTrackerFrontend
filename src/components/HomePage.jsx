@@ -1,100 +1,225 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import { Link, Links } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import Example from './PieChart';
+import TransactionsBarChart from './BarChat';
 
 const HomePage = () => {
     const [data, setData] = useState([]);
+    const [expenses, setExpenses] = useState([]);
+    const [pieData, setPieData] = useState([]);
 
     useEffect(() => {
-        axios.get('http://localhost:8081/') // Updated route
-            .then(res => setData(res.data))
-            .catch(err => console.log(err));
+        const fetchData = async () => {
+            try {
+                const paymentRes = await axios.get('http://localhost:8081/getAllPaymentByType');
+                setPieData(paymentRes.data.formattedData);
+                setExpenses(paymentRes.data.expenseType);
+
+                const transactionRes = await axios.get('http://localhost:8081/');
+                setData(transactionRes.data);
+            } catch (err) {
+                console.error('Error fetching data:', err);
+            }
+        };
+        fetchData();
     }, []);
 
-    const handleDelete=(id)=>{
-        axios.delete(`http://localhost:8081/delete/${id}`)
-        .then(res=>{
-            setData(prev => prev.filter(data => data._id !== id))
+    const handleDelete = async (id) => {
+        try {
+            await axios.delete(`http://localhost:8081/delete/${id}`);
+            setData(prev => prev.filter(transaction => transaction._id !== id));
             alert('Transaction deleted successfully');
-        })
-        .catch(err=>console.log(err));
-    }
+        } catch (err) {
+            console.error('Error deleting transaction:', err);
+        }
+    };
 
     return (
-        <div className='container-fluid d-flex vh-100 bg-primary justify-content-center align-items-center'>
-    <div className='col-12 col-md-10 col-lg-8 bg-white rounded p-4'>
-        <h2 className="text-center mb-4">Transaction List</h2>
-        <div className="d-flex justify-content-end mb-3">
-            <Link to="/create" className='btn btn-success'>Create +</Link>
-        </div>
-        <div className="d-none d-md-block table-responsive">
-            <table className='table table-striped table-bordered'>
-                <thead className="table-dark">
-                    <tr>
-                        <th>ID</th>
-                        <th>UserName</th>
-                        <th>UserEmail</th>
-                        <th>Transaction Id</th>
-                        <th>Amount</th>
-                        <th>Method</th>
-                        <th>Date</th>
-                        <th>Description</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {data.length > 0 ? (
-                        data.map((transaction, index) => (
-                            <tr key={index}>
-                                <td>{transaction._id}</td>
-                                <td>{transaction.userName}</td>
-                                <td>{transaction.userEmail}</td>
-                                <td>{transaction.transactionId}</td>
-                                <td>${transaction.amount}</td>
-                                <td>{transaction.method}</td>
-                                <td>{new Date(transaction.date).toLocaleDateString()}</td>
-                                <td>{transaction.description}</td>
-                                <td className="d-flex flex-column flex-md-row gap-2">
-                                    <Link to={`/read/${transaction._id}`} className="btn btn-warning btn-sm">Read</Link>
-                                    <Link to={`/edit/${transaction._id}`} className="btn btn-success btn-sm">Edit</Link>
-                                    <button onClick={() => handleDelete(transaction._id)} className="btn btn-danger btn-sm">Delete</button>
-                                </td>
-                            </tr>
-                        ))
-                    ) : (
-                        <tr>
-                            <td colSpan="9" className="text-center">No transactions found</td>
-                        </tr>
-                    )}
-                </tbody>
-            </table>
-        </div>
-        <div className="d-block d-md-none">
-            {data.length > 0 ? (
-                data.map((transaction, index) => (
-                    <div key={index} className='border p-3 mb-3 rounded'>
-                        <p><strong>ID:</strong> {transaction._id}</p>
-                        <p><strong>UserName:</strong> {transaction.userName}</p>
-                        <p><strong>UserEmail:</strong> {transaction.userEmail}</p>
-                        <p><strong>Transaction Id:</strong> {transaction.transactionId}</p>
-                        <p><strong>Amount:</strong> ${transaction.amount}</p>
-                        <p><strong>Method:</strong> {transaction.method}</p>
-                        <p><strong>Date:</strong> {new Date(transaction.date).toLocaleDateString()}</p>
-                        <p><strong>Description:</strong> {transaction.description}</p>
-                        <div className="d-flex gap-2">
-                            <Link to={`/read/${transaction._id}`} className="btn btn-warning btn-sm">Read</Link>
-                            <Link to={`/edit/${transaction._id}`} className="btn btn-success btn-sm">Edit</Link>
-                            <button onClick={() => handleDelete(transaction._id)} className="btn btn-danger btn-sm">Delete</button>
-                        </div>
-                    </div>
-                ))
-            ) : (
-                <p className="text-center">No transactions found</p>
-            )}
-        </div>
-    </div>
-</div>
+        <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            padding: '20px',
+            backgroundColor: '#f8f9fa',
+            minHeight: '100vh'
+        }}>
+            <div style={{
+                width: '100%',
+                maxWidth: '1200px',
+                backgroundColor: '#fff',
+                borderRadius: '10px',
+                padding: '20px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                marginBottom: '20px'
+            }}>
+                <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Transaction List</h2>
 
+                {/* Transaction Summary Cards */}
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr',
+                    gap: '20px'
+                }}>
+                    <div style={{
+                        backgroundColor: '#007bff',
+                        color: '#fff',
+                        padding: '20px',
+                        borderRadius: '10px'
+                    }}>
+                        <h5>Total Transactions</h5>
+                        <p>Total Amount: ${pieData.reduce((acc, transaction) => acc + transaction.value, 0)}</p>
+                        {pieData.map(data => (
+                            <p key={data.name}>{data.name}: ${data.value}</p>
+                        ))}
+                    </div>
+
+                    <div style={{
+                        backgroundColor: '#dc3545',
+                        color: '#fff',
+                        padding: '20px',
+                        borderRadius: '10px'
+                    }}>
+                        <h5>Expenses Category</h5>
+                        {expenses.map(data => (
+                            <p key={data._id}>{data._id}: ${data.value}</p>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Charts */}
+                <div style={{
+                    display: 'flex',
+                    flexDirection: window.innerWidth >= 1024 ? 'row' : 'column', // Responsive layout
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: '20px',
+                    marginTop: '20px'
+                }}>
+                    <div style={{ width: '100%', maxWidth: '450px' }}>
+                        <Example data={pieData} />
+                    </div>
+                    <div style={{ width: '100%', maxWidth: '400px' }}>
+                        <TransactionsBarChart />
+                    </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    gap: '10px',
+                    margin: '20px 0'
+                }}>
+                    <Link to="/create" style={{
+                        backgroundColor: '#28a745',
+                        color: '#fff',
+                        padding: '10px 20px',
+                        borderRadius: '5px',
+                        textDecoration: 'none'
+                    }}>
+                        Create +
+                    </Link>
+                    <Link to="/budget" style={{
+                        backgroundColor: '#ffc107',
+                        color: '#fff',
+                        padding: '10px 20px',
+                        borderRadius: '5px',
+                        textDecoration: 'none'
+                    }}>
+                        Create Budget
+                    </Link>
+                    <Link to="/compare" style={{
+                        backgroundColor: '#17a2b8',
+                        color: '#fff',
+                        padding: '10px 20px',
+                        borderRadius: '5px',
+                        textDecoration: 'none'
+                    }}>
+                        Compare Budget
+                    </Link>
+                </div>
+
+                {/* Transactions Table */}
+                <div style={{
+                    overflowX: 'auto'
+                }}>
+                    <table style={{
+                        width: '100%',
+                        borderCollapse: 'collapse'
+                    }}>
+                        <thead style={{ backgroundColor: '#343a40', color: '#fff' }}>
+                            <tr>
+                                {['ID', 'UserName', 'UserEmail', 'Transaction Id', 'Amount', 'Method', 'Date', 'Expense Type', 'Description', 'Action'].map(header => (
+                                    <th key={header} style={{
+                                        padding: '10px',
+                                        textAlign: 'left'
+                                    }}>
+                                        {header}
+                                    </th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {data.length > 0 ? data.map((transaction, index) => (
+                                <tr key={transaction._id} style={{
+                                    borderBottom: '1px solid #ddd'
+                                }}>
+                                    <td style={{ padding: '10px' }}>{index + 1}</td>
+                                    <td style={{ padding: '10px' }}>{transaction.userName}</td>
+                                    <td style={{ padding: '10px' }}>{transaction.userEmail}</td>
+                                    <td style={{ padding: '10px' }}>{transaction.transactionId}</td>
+                                    <td style={{ padding: '10px' }}>${transaction.amount}</td>
+                                    <td style={{ padding: '10px' }}>{transaction.method}</td>
+                                    <td style={{ padding: '10px' }}>{new Date(transaction.date).toLocaleDateString()}</td>
+                                    <td style={{ padding: '10px' }}>{transaction.expenseType}</td>
+                                    <td style={{ padding: '10px' }}>{transaction.description}</td>
+                                    <td style={{ display: 'flex', gap: '5px' }}>
+                                        <Link to={`/read/${transaction._id}`} style={{
+                                            backgroundColor: '#ffc107',
+                                            color: '#fff',
+                                            padding: '5px 10px',
+                                            borderRadius: '5px',
+                                            textDecoration: 'none'
+                                        }}>
+                                            Read
+                                        </Link>
+                                        <Link to={`/edit/${transaction._id}`} style={{
+                                            backgroundColor: '#28a745',
+                                            color: '#fff',
+                                            padding: '5px 10px',
+                                            borderRadius: '5px',
+                                            textDecoration: 'none'
+                                        }}>
+                                            Edit
+                                        </Link>
+                                        <button onClick={() => handleDelete(transaction._id)} style={{
+                                            backgroundColor: '#dc3545',
+                                            color: '#fff',
+                                            padding: '5px 10px',
+                                            borderRadius: '5px',
+                                            border: 'none',
+                                            cursor: 'pointer'
+                                        }}>
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            )) : (
+                                <tr>
+                                    <td colSpan="10" style={{
+                                        textAlign: 'center',
+                                        padding: '10px'
+                                    }}>
+                                        No transactions found
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     );
 };
 

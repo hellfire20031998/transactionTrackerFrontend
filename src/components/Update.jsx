@@ -5,20 +5,39 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 const Update = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    
+
     const [formData, setFormData] = useState({
         userName: '',
         userEmail: '',
         amount: '',
         description: '',
-        method: ''
+        method: '',
+        expenseType: ''
     });
+    const [paymentMethodList, setPaymentMethodList] = useState([]);
+    const [expTypeList, setExpTypeList] = useState([]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [paymentRes, expTypeRes] = await Promise.all([
+                    axios.get('http://localhost:8081/type'),
+                    axios.get('http://localhost:8081/expenseType')
+                ]);
+                setPaymentMethodList(paymentRes.data);
+                setExpTypeList(expTypeRes.data);
+            } catch (err) {
+                console.log(err);
+            }
+        };
+        fetchData();
+    }, []);
 
     useEffect(() => {
         axios.get(`http://localhost:8081/read/${id}`)
             .then(res => {
-                const { userName, userEmail, amount, description, method } = res.data;
-                setFormData({ userName, userEmail, amount, description, method });
+                const { userName, userEmail, amount, description, method, expenseType } = res.data;
+                setFormData({ userName, userEmail, amount, description, method, expenseType });
             })
             .catch(err => {
                 console.error('Error fetching transaction:', err);
@@ -54,11 +73,23 @@ const Update = () => {
             borderRadius: '10px',
             width: '90%',
             maxWidth: '600px',
-            margin: '50px auto'
+            margin: '50px auto',
+            boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)'
         }}>
-            <h2 style={{ fontSize: '24px', fontWeight: 'bold' }}>Update Transaction</h2>
-            <form onSubmit={handleSubmit} style={{ width: '100%' }}>
-                {['userName', 'userEmail', 'amount', 'description', 'method'].map((field) => (
+            <h2 style={{
+                fontSize: '24px',
+                fontWeight: 'bold',
+                textAlign: 'center',
+                marginBottom: '20px'
+            }}>Update Transaction</h2>
+
+            <form onSubmit={handleSubmit} style={{
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px'
+            }}>
+                {['userName', 'userEmail', 'amount', 'description'].map((field) => (
                     <input
                         key={field}
                         type={field === 'amount' ? 'number' : 'text'}
@@ -68,37 +99,96 @@ const Update = () => {
                         onChange={handleChange}
                         required
                         style={{
-                            margin: '10px 0',
-                            padding: '10px',
+                            padding: '12px',
                             width: '100%',
-                            borderRadius: '5px',
+                            borderRadius: '8px',
                             border: '1px solid #ccc',
-                            fontSize: '16px'
+                            fontSize: '16px',
+                            boxSizing: 'border-box'
                         }}
                     />
                 ))}
+                <select
+                    value={formData.method}
+                    onChange={(e) => setFormData({ ...formData, method: e.target.value })}
+                    required
+                    style={{
+                        padding: '12px',
+                        width: '100%',
+                        borderRadius: '8px',
+                        border: '1px solid #ccc',
+                        fontSize: '16px',
+                        backgroundColor: '#fff'
+                    }}
+                >
+                    <option value="">Select Payment Mode</option>
+                    {paymentMethodList.map(data => (
+                        <option key={data.typeOfPayment} value={data.typeOfPayment}>
+                            {data.typeOfPayment}
+                        </option>
+                    ))}
+                </select>
+
+                <select
+                    value={formData.expenseType}
+                    onChange={(e) => setFormData({ ...formData, expenseType: e.target.value })}
+                    required
+                    style={{
+                        padding: '12px',
+                        width: '100%',
+                        borderRadius: '8px',
+                        border: '1px solid #ccc',
+                        fontSize: '16px',
+                        backgroundColor: '#fff'
+                    }}
+                >
+                    <option value="">Select Expense Type</option>
+                    {expTypeList.map(data => (
+                        <option key={data.type} value={data.type}>
+                            {data.type}
+                        </option>
+                    ))}
+                </select>
+
                 <button type="submit" style={{
-                    marginTop: '10px',
-                    padding: '10px 20px',
+                    padding: '12px',
                     backgroundColor: '#28a745',
                     color: '#fff',
                     border: 'none',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
+                    borderRadius: '8px',
                     fontSize: '16px',
-                    width: '100%'
-                }}>Update Transaction</button>
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                    transition: 'background-color 0.3s ease'
+                }}
+                    onMouseOver={(e) => e.target.style.backgroundColor = '#218838'}
+                    onMouseOut={(e) => e.target.style.backgroundColor = '#28a745'}
+                >
+                    Update Transaction
+                </button>
             </form>
-            <div style={{ marginTop: '20px', width: '100%' }}>
+
+            <div style={{
+                marginTop: '20px',
+                width: '100%'
+            }}>
                 <Link to="/" style={{
                     display: 'block',
                     textAlign: 'center',
-                    padding: '10px 20px',
+                    padding: '12px',
                     backgroundColor: '#007bff',
                     color: '#fff',
                     textDecoration: 'none',
-                    borderRadius: '5px'
-                }}>Back</Link>
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    transition: 'background-color 0.3s ease'
+                }}
+                    onMouseOver={(e) => e.target.style.backgroundColor = '#0056b3'}
+                    onMouseOut={(e) => e.target.style.backgroundColor = '#007bff'}
+                >
+                    Back
+                </Link>
             </div>
         </div>
     );
