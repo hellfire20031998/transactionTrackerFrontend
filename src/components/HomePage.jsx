@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import Example from './PieChart';
 import TransactionsBarChart from './BarChat';
 
+const url = process.env.REACT_APP_BACKEND_URL ||'https://transactiontrackerbackend.onrender.com/'
+console.log(url)
 const HomePage = () => {
     const [data, setData] = useState([]);
     const [expenses, setExpenses] = useState([]);
@@ -12,11 +14,11 @@ const HomePage = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const paymentRes = await axios.get('http://localhost:8081/getAllPaymentByType');
+                const paymentRes = await axios.get(url+'getAllPaymentByType');
                 setPieData(paymentRes.data.formattedData);
                 setExpenses(paymentRes.data.expenseType);
 
-                const transactionRes = await axios.get('http://localhost:8081/');
+                const transactionRes = await axios.get(url);
                 setData(transactionRes.data);
             } catch (err) {
                 console.error('Error fetching data:', err);
@@ -27,7 +29,7 @@ const HomePage = () => {
 
     const handleDelete = async (id) => {
         try {
-            await axios.delete(`http://localhost:8081/delete/${id}`);
+            await axios.delete(`${url}delete/${id}`);
             setData(prev => prev.filter(transaction => transaction._id !== id));
             alert('Transaction deleted successfully');
         } catch (err) {

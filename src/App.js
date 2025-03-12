@@ -13,6 +13,7 @@ import CompareBudget from './components/CompareBudget';
 
 
 function App() {
+  
   return (
      
     <BrowserRouter>

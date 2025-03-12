@@ -2,12 +2,15 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
+
+const url = process.env.REACT_APP_BACKEND_URL ||'https://transactiontrackerbackend.onrender.com/'
+
 const Read = () => {
     const { id } = useParams();
     const [transaction, setTransaction] = useState(null);
 
     useEffect(() => {
-        axios.get(`http://localhost:8081/read/${id}`)
+        axios.get(`${url}read/${id}`)
             .then(res => {
                 setTransaction(res.data);
             })

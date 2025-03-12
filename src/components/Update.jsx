@@ -2,6 +2,9 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
+
+const url = process.env.REACT_APP_BACKEND_URL ||'https://transactiontrackerbackend.onrender.com/'
+
 const Update = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -21,8 +24,8 @@ const Update = () => {
         const fetchData = async () => {
             try {
                 const [paymentRes, expTypeRes] = await Promise.all([
-                    axios.get('http://localhost:8081/type'),
-                    axios.get('http://localhost:8081/expenseType')
+                    axios.get(url+'type'),
+                    axios.get(url+'expenseType')
                 ]);
                 setPaymentMethodList(paymentRes.data);
                 setExpTypeList(expTypeRes.data);
@@ -34,7 +37,7 @@ const Update = () => {
     }, []);
 
     useEffect(() => {
-        axios.get(`http://localhost:8081/read/${id}`)
+        axios.get(`${url}read/${id}`)
             .then(res => {
                 const { userName, userEmail, amount, description, method, expenseType } = res.data;
                 setFormData({ userName, userEmail, amount, description, method, expenseType });
@@ -55,7 +58,7 @@ const Update = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`http://localhost:8081/update/${id}`, formData);
+            await axios.put(`${url}update/${id}`, formData);
             alert('Transaction updated successfully');
             navigate('/');
         } catch (err) {

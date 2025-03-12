@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 
+const url = process.env.REACT_APP_BACKEND_URL ||'https://transactiontrackerbackend.onrender.com/'
+
 const Create = ({ onTransactionAdded }) => {
     const [formData, setFormData] = useState({
         userName: '',
@@ -22,8 +24,8 @@ const Create = ({ onTransactionAdded }) => {
         const fetchData = async () => {
             try {
                 const [paymentRes, expenseRes] = await Promise.all([
-                    axios.get('http://localhost:8081/type'),
-                    axios.get('http://localhost:8081/expenseType')
+                    axios.get(url+'/type'),
+                    axios.get(url+'/expenseType')
                 ]);
                 setPaymentMethodList(paymentRes.data);
                 setExpTypeList(expenseRes.data);
@@ -44,7 +46,7 @@ const Create = ({ onTransactionAdded }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:8081/create', formData);
+            await axios.post(url+'/create', formData);
             navigate('/');
         } catch (err) {
             console.error('Error submitting form:', err);

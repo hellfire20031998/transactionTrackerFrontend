@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
+const url = process.env.REACT_APP_BACKEND_URL ||'https://transactiontrackerbackend.onrender.com/'
+
 const BudgetForm = () => {
     const [formData, setFormData] = useState({
         month: '',
@@ -15,7 +17,7 @@ const BudgetForm = () => {
     useEffect(() => {
         const fetchExpenseTypes = async () => {
             try {
-                const res = await axios.get('http://localhost:8081/expenseType');
+                const res = await axios.get(url+'expenseType');
                 setExpTypeList(res.data);
             } catch (err) {
                 console.log(err);
@@ -27,7 +29,7 @@ const BudgetForm = () => {
 
     const fetchBudgets = async () => {
         try {
-            const response = await axios.get('http://localhost:8081/getBudget');
+            const response = await axios.get(url+'getBudget');
             setBudgets(response.data);
         } catch (error) {
             console.error('Error fetching budgets:', error);
@@ -42,7 +44,7 @@ const BudgetForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:8081/createBudget', formData);
+            await axios.post(url+'createBudget', formData);
             alert('Budget created/updated successfully!');
             fetchBudgets();
             setFormData({ month: '', expenseType: '', totalAmount: '' });
@@ -55,7 +57,7 @@ const BudgetForm = () => {
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this budget?')) {
             try {
-                await axios.delete(`http://localhost:8081/deleteBudget/${id}`);
+                await axios.delete(`${url}deleteBudget/${id}`);
                 alert('Budget deleted successfully!');
                 fetchBudgets();
             } catch (error) {
