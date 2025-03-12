@@ -24,8 +24,8 @@ const Create = ({ onTransactionAdded }) => {
         const fetchData = async () => {
             try {
                 const [paymentRes, expenseRes] = await Promise.all([
-                    axios.get(url+'/type'),
-                    axios.get(url+'/expenseType')
+                    axios.get(url+'type'),
+                    axios.get(url+'expenseType')
                 ]);
                 setPaymentMethodList(paymentRes.data);
                 setExpTypeList(expenseRes.data);
