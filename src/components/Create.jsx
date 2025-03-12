@@ -46,7 +46,7 @@ const Create = ({ onTransactionAdded }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post(url+'/create', formData);
+            await axios.post(url+'create', formData);
             navigate('/');
         } catch (err) {
             console.error('Error submitting form:', err);
